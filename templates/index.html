@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC AirBnB Price Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF7F2;
+            --dark: #1A1A1A;
+            --orange: #FF5A5F;
+            --orange-light: #FFAF9B;
+            --gold: #E8B84B;
+            --muted: #6B6B6B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--cream);
+            color: var(--dark);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background decorative elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,90,95,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -150px;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(232,184,75,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Floating dots */
+        .dot {
+            position: fixed;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: float 6s ease-in-out infinite;
+        }
+        .dot-1 { width: 12px; height: 12px; background: var(--orange); top: 15%; left: 10%; animation-delay: 0s; }
+        .dot-2 { width: 8px; height: 8px; background: var(--gold); top: 70%; right: 12%; animation-delay: 1.5s; }
+        .dot-3 { width: 16px; height: 16px; background: var(--orange); bottom: 20%; left: 20%; animation-delay: 3s; }
+        .dot-4 { width: 10px; height: 10px; background: var(--gold); top: 30%; right: 25%; animation-delay: 0.8s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 64px 72px;
+            max-width: 680px;
+            width: 90%;
+            text-align: center;
+            box-shadow:
+                0 2px 4px rgba(0,0,0,0.04),
+                0 8px 24px rgba(0,0,0,0.06),
+                0 32px 64px rgba(0,0,0,0.06);
+            position: relative;
+            animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Top accent line */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--orange), var(--gold));
+            border-radius: 0 0 4px 4px;
+        }
+
+        .eyebrow {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 20px;
+            animation: fadeUp 0.8s 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--dark);
+            margin-bottom: 36px;
+            animation: fadeUp 0.8s 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        h1 span {
+            color: var(--orange);
+        }
+
+        /* Logo container */
+        .logo-link {
+            display: inline-block;
+            margin-bottom: 36px;
+            text-decoration: none;
+            animation: fadeUp 0.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-link:hover {
+            transform: scale(1.08);
+        }
+
+        .logo-wrapper {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #fff5f0, #fff);
+            border: 2px solid rgba(255,90,95,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(255,90,95,0.12);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .logo-link:hover .logo-wrapper {
+            box-shadow: 0 8px 32px rgba(255,90,95,0.25);
+            border-color: rgba(255,90,95,0.4);
+        }
+
+        .logo-wrapper img {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.8s 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+        }
+
+        .divider span {
+            font-size: 18px;
+            color: var(--orange);
+        }
+
+        /* Description */
+        .description {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--muted);
+            margin-bottom: 12px;
+            animation: fadeUp 0.8s 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        .cta-text {
+            font-size: 14px;
+            color: var(--muted);
+            animation: fadeUp 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            margin-bottom: 32px;
+        }
+
+        .cta-text strong {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp 0.8s 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(255,90,95,0.3);
+        }
+
+        .btn-primary:hover {
+            background: #e04f54;
+            box-shadow: 0 6px 24px rgba(255,90,95,0.45);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--dark);
+            border: 1.5px solid rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer-note {
+            margin-top: 28px;
+            font-size: 12px;
+            color: #bbb;
+            letter-spacing: 0.5px;
+            animation: fadeUp 0.8s 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+        }
+
+        .footer-note a {
+            color: var(--orange);
+            text-decoration: none;
+        }
+
+        /* NYC skyline silhouette at bottom */
+        .skyline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            opacity: 0.04;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dot dot-1"></div>
+    <div class="dot dot-2"></div>
+    <div class="dot dot-3"></div>
+    <div class="dot dot-4"></div>
+
+    <!-- NYC Skyline SVG -->
+    <svg class="skyline" viewBox="0 0 1440 80" preserveAspectRatio="none" fill="#1A1A1A" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,80 L0,60 L20,60 L20,40 L30,40 L30,30 L40,30 L40,40 L50,40 L50,50 L70,50 L70,20 L80,20 L80,15 L85,15 L85,20 L100,20 L100,50 L120,50 L120,35 L130,35 L130,25 L140,25 L140,35 L160,35 L160,55 L180,55 L180,30 L190,30 L190,20 L195,20 L195,15 L200,15 L200,20 L205,20 L205,30 L220,30 L220,55 L250,55 L250,40 L265,40 L265,25 L275,25 L275,40 L290,40 L290,60 L320,60 L320,35 L335,35 L335,20 L340,20 L340,10 L345,10 L345,20 L350,20 L350,35 L370,35 L370,50 L400,50 L400,30 L415,30 L415,15 L425,15 L425,30 L450,30 L450,55 L480,55 L480,40 L495,40 L495,28 L505,28 L505,40 L520,40 L520,60 L550,60 L550,35 L560,35 L560,20 L567,20 L567,12 L572,12 L572,20 L580,20 L580,35 L600,35 L600,55 L630,55 L630,38 L645,38 L645,25 L655,25 L655,38 L670,38 L670,55 L700,55 L700,42 L715,42 L715,30 L722,30 L722,22 L728,22 L728,30 L740,30 L740,42 L760,42 L760,58 L790,58 L790,35 L800,35 L800,20 L808,20 L808,12 L814,12 L814,20 L822,20 L822,35 L840,35 L840,55 L870,55 L870,40 L885,40 L885,28 L893,28 L893,40 L910,40 L910,60 L940,60 L940,42 L952,42 L952,30 L960,30 L960,42 L975,42 L975,58 L1000,58 L1000,35 L1012,35 L1012,22 L1020,22 L1020,35 L1040,35 L1040,52 L1070,52 L1070,38 L1082,38 L1082,26 L1090,26 L1090,38 L1105,38 L1105,55 L1130,55 L1130,40 L1142,40 L1142,28 L1150,28 L1150,40 L1165,40 L1165,58 L1195,58 L1195,42 L1205,42 L1205,30 L1212,30 L1212,42 L1228,42 L1228,60 L1255,60 L1255,38 L1265,38 L1265,25 L1273,25 L1273,38 L1290,38 L1290,55 L1320,55 L1320,40 L1332,40 L1332,28 L1340,28 L1340,40 L1355,40 L1355,58 L1385,58 L1385,42 L1395,42 L1395,30 L1403,30 L1403,42 L1420,42 L1420,60 L1440,60 L1440,80 Z"/>
+    </svg>
+
+    <div class="card">
+        <p class="eyebrow">Exploratory Data Analysis</p>
+        <h1>NYC Air<span>BnB</span><br>Price Analysis</h1>
+
+        <a href="/notebook" class="logo-link" title="Open Jupyter Notebook">
+            <div class="logo-wrapper">
+                <!-- Jupyter logo SVG inline -->
+                <svg width="55" height="55" viewBox="0 0 207 207" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="103.5" cy="103.5" rx="78" ry="78" fill="none"/>
+                    <!-- Jupyter-style orange arcs -->
+                    <path d="M103.5 32C65.6 32 35 62.6 35 100.5" stroke="#F37626" stroke-width="14" stroke-linecap="round" fill="none"/>
+                    <path d="M103.5 169C141.4 169 172 138.4 172 100.5" stroke="#F37626" stroke-width="14" stroke-linecap="round" fill="none"/>
+                    <!-- Dots -->
+                    <circle cx="103.5" cy="30" r="10" fill="#F37626"/>
+                    <circle cx="103.5" cy="172" r="10" fill="#F37626"/>
+                    <circle cx="37" cy="145" r="8" fill="#9E9E9E"/>
+                    <!-- Text -->
+                    <text x="103.5" y="111" font-family="sans-serif" font-size="28" font-weight="bold" fill="#4E4E4E" text-anchor="middle">ju</text>
+                </svg>
+            </div>
+        </a>
+
+        <div class="divider"><span>✦</span></div>
+
+        <p class="description">
+            This application was built to explore and visualize New York City's Airbnb pricing trends across neighborhoods, room types, and availability patterns.
+        </p>
+        <p class="cta-text">
+            Click the <strong>Jupyter logo</strong> above to explore the embedded notebook.
+        </p>
+
+
+    </div>
+
+    <p class="footer-note">Powered by <a href="https://flask.palletsprojects.com/" target="_blank">Flask</a> &nbsp;·&nbsp; Built by Zamin Abbas for Data Analysis</p>
+
+</body>
+</html>
